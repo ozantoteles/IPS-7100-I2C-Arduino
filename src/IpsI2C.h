@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Wire.h>
 
 union bytesToPM
 {
@@ -13,7 +14,7 @@ public:
     unsigned long pc_values[7] = {0, 0, 0, 0, 0, 0, 0};
     float pm_values[7] = {0, 0, 0, 0, 0, 0, 0};
     uint16_t event_status = 0;
-    void begin(int sda = 21, int scl = 22);
+    void begin(TwoWire &wire = Wire);
     void update();
     unsigned long *getPC();
     unsigned long getPC01();
@@ -46,4 +47,6 @@ public:
     bool write_i2c(unsigned char, unsigned char);
     uint16_t get_checksum(uint8_t *byte, int);
     void setDebug(bool);
+private:
+    TwoWire *_wire; // Pointer to the Wire object
 };

@@ -1,6 +1,4 @@
-#include "Arduino.h"
-#include "Wire.h"
-
+#include <Arduino.h>
 #include "IpsI2C.h"
 
 // For CRC16 checksum
@@ -8,21 +6,17 @@
 
 bool ips_debug = false;
 
-void IpsSensor::begin(int sda, int scl)
+void IpsSensor::begin(TwoWire &wire)
 {
-  Serial.print("IpsSensor begin");
-  Serial.print(sda);
-  Serial.print(scl);
-  Serial.print("\n");
-  Wire.begin(sda, scl);
-  Wire.setTimeOut(3000);
-  //Wire.setClock(100000);
+  _wire = &wire; // Store the reference to the Wire object
+  _wire->begin();
+  _wire->setTimeOut(3000);
+  // Wire.setClock(100000);
   delay(100);
-  Wire.beginTransmission(0x4B);
-  Wire.write(0x10);
-  Wire.write(0x01);
-  Wire.endTransmission();
-
+  _wire->beginTransmission(0x4B);
+  _wire->write(0x10);
+  _wire->write(0x01);
+  _wire->endTransmission();
 }
 
 void IpsSensor::update()
@@ -85,13 +79,13 @@ void IpsSensor::read_i2c(unsigned char command, int reply_size, uint8_t res_arra
   bool checksum_pass = false;
   while (!checksum_pass)
   {
-    Wire.beginTransmission(0x4B);
-    Wire.write(command);
-    Wire.endTransmission();
-    Wire.requestFrom(0x4B, reply_size);
+    _wire->beginTransmission(0x4B);
+    _wire->write(command);
+    _wire->endTransmission();
+    _wire->requestFrom(0x4B, reply_size);
     for (int n = 0; n < reply_size; n++)
     {
-      res_array[n] = Wire.read();
+      res_array[n] = _wire->read();
     }
 
     // Debug raw bytes
@@ -138,10 +132,10 @@ void IpsSensor::read_i2c(unsigned char command, int reply_size, uint8_t res_arra
 
 boolean IpsSensor::write_i2c(unsigned char command, unsigned char parameter)
 {
-  Wire.beginTransmission(0x4B);
-  Wire.write(command);
-  Wire.write(parameter);
-  Wire.endTransmission();
+  _wire->beginTransmission(0x4B);
+  _wire->write(command);
+  _wire->write(parameter);
+  _wire->endTransmission();
   return true;
 }
 
